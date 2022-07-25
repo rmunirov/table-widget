@@ -6,10 +6,13 @@ export const connect = async () => {
     db = await getDB();
 };
 
-export const getData = async () => {
+export const getTableData = async () => {
+    if (db === null) {
+        throw new Error('no db connection');
+    }
     try {
         const res = await db.query('SELECT * FROM test_data');
-        return res;
+        return res.rows;
     } catch (error) {
         console.log(error);
     }

@@ -7,6 +7,7 @@ export const Wrapper = styled('div')`
 
 export const Filter = styled('div')`
     display: flex;
+    margin-bottom: 5px;
 `;
 
 export const Content = styled('div')`
