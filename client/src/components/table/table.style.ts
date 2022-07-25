@@ -6,10 +6,13 @@ export const Wrapper = styled('div')`
     margin: 0 5px;
 `;
 
-export const Table = styled('table')``;
+export const Table = styled('table')`
+    border: 1px solid black;
+    border-collapse: collapse;
+`;
 
 export const Row = styled('tr')``;
 
-export const Head = styled('th')``;
+export const THead = styled('thead')``;
 
-export const Data = styled('td')``;
+export const TBody = styled('tbody')``;

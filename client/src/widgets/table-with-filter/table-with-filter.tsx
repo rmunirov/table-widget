@@ -33,20 +33,39 @@ const TableWithFilter = () => {
         { value: 'less', label: 'меньше' },
     ];
 
+    const headers: Array<TableHeaderType> = [
+        { title: 'Дата', withSort: false, onSort: () => {} },
+        { title: 'Название', withSort: true, onSort: () => {} },
+        { title: 'Количество', withSort: true, onSort: () => {} },
+        { title: 'Расстояние', withSort: true, onSort: () => {} },
+    ];
+
+    const data: Array<TableDataType> = [
+        { date: new Date(), name: 'React#1', count: 1, distance: 11 },
+        { date: new Date(), name: 'React#2', count: 1, distance: 12 },
+        { date: new Date(), name: 'React#3', count: 1, distance: 13 },
+        { date: new Date(), name: 'React#4', count: 1, distance: 14 },
+        { date: new Date(), name: 'React#5', count: 1, distance: 15 },
+        { date: new Date(), name: 'React#6', count: 1, distance: 16 },
+        { date: new Date(), name: 'React#7', count: 1, distance: 17 },
+        { date: new Date(), name: 'React#8', count: 1, distance: 18 },
+        { date: new Date(), name: 'React#9', count: 1, distance: 19 },
+    ];
+
     return (
         <Wrapper>
             <Filter>
-                <SelectComponent items={items} labelText="Столбец" value={column} onChange={handleColumnChange} />
+                <SelectComponent items={items} labelText='Столбец' value={column} onChange={handleColumnChange} />
                 <SelectComponent
                     items={conditions}
-                    labelText="Условие"
+                    labelText='Условие'
                     value={condition}
                     onChange={handleConditionChange}
                 />
-                <InputComponent labelText="Значение" value={value} onChange={handleValueChange} />
+                <InputComponent labelText='Значение' value={value} onChange={handleValueChange} />
             </Filter>
             <Content>
-                <TableComponent />
+                <TableComponent headers={headers} data={data} />
             </Content>
         </Wrapper>
     );
