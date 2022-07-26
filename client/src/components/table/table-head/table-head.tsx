@@ -8,6 +8,8 @@ type PropsType = {
     onSort?: () => void;
 };
 
+// TODO добавить тип сортировки, по возростанию и убыванию
+
 const TableHead: FC<PropsType> = ({ title, withSort, onSort }) => {
     const [sorted, setSorted] = useState(false);
 
