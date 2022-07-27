@@ -21,10 +21,10 @@ export const conditions = [
 ];
 
 export const headers = [
-    { value: 'date', label: 'Дата' },
-    { value: 'name', label: 'Название' },
-    { value: 'count', label: 'Количество' },
-    { value: 'distance', label: 'Расстояние' },
+    { value: 'date', label: 'Дата', withSort: false },
+    { value: 'name', label: 'Название', withSort: true },
+    { value: 'count', label: 'Количество', withSort: true },
+    { value: 'distance', label: 'Расстояние', withSort: true },
 ];
 
 export const sortMethods = ['ASC', 'DESC'];
@@ -94,11 +94,15 @@ export const getFilterData = async (column: any, condition: any, value: any) => 
     let columnCopy = column;
 
     if (condition === ConditionNames.CONTAIN) {
-        valueCopy = '\'%' + value + '%\'';
+        valueCopy = "'%" + value + "%'";
         columnCopy = column + '::text';
     }
 
+    if (column === 'date' || column === 'name') {
+        columnCopy = column + '::text';
+        valueCopy = "'" + value + "'";
+    }
+
     const text = 'SELECT * FROM test_data WHERE' + ' ' + columnCopy + ' ' + cond.symbol + ' ' + valueCopy;
-    console.log(text);
     return await handleQuery(text);
 };

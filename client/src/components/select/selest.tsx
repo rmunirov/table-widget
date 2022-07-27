@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, useEffect } from 'react';
 import { Label, Select, Wrapper, Option } from './select.styles';
 
 type Item = {
@@ -18,6 +18,12 @@ type PropsType = {
 };
 
 const SelectComponent: FC<PropsType> = ({ items, labelText, value, onChange }) => {
+    useEffect(() => {
+        if (items.length > 0) {
+            onChange(items[0].value);
+        }
+    }, []);
+
     const handleChange = (event) => {
         onChange(event.target.value);
     };

@@ -7,9 +7,11 @@ import TableDataRow from './table-data/table-data';
 type PropsType = {
     headers: Array<TableHeaderType>;
     data: Array<TableDataType>;
+    methods: Array<string>;
+    activeSortColumn: TableHeaderType | null;
 };
 
-const TableComponent: FC<PropsType> = ({ headers, data }) => {
+const TableComponent: FC<PropsType> = ({ headers, data, methods, activeSortColumn }) => {
     return (
         <Wrapper>
             <Table>
@@ -18,10 +20,10 @@ const TableComponent: FC<PropsType> = ({ headers, data }) => {
                         {headers.map((item) => {
                             return (
                                 <TableHead
-                                    key={item.title}
-                                    title={item.title}
-                                    withSort={item.withSort}
-                                    onSort={item.onSort}
+                                    key={item.label}
+                                    header={item}
+                                    methods={methods}
+                                    isActive={activeSortColumn === null ? false : item.label === activeSortColumn.label}
                                 />
                             );
                         })}
@@ -29,8 +31,8 @@ const TableComponent: FC<PropsType> = ({ headers, data }) => {
                 </THead>
                 <TBody>
                     {data.map((item) => {
-                    return <TableDataRow key={item.name} {...item} />;
-                })}
+                        return <TableDataRow key={item.name} {...item} />;
+                    })}
                 </TBody>
             </Table>
         </Wrapper>

@@ -1,7 +1,15 @@
 import express from 'express';
 import { config } from 'dotenv';
-import { conditions, connect, getFilterData, getSortData, getTableColumnNames, getTableData } from './controllers';
+import { conditions, connect, getFilterData, getSortData, getTableColumnNames, getTableData, sortMethods } from './controllers';
 import { getResponse } from './utils/common';
+
+// .env
+// PORT=4343
+// PGHOST='localhost'
+// PGUSER='admin'
+// PGDATABASE='db_table'
+// PGPASSWORD='root'
+// PGPORT=5432
 
 config();
 
@@ -36,7 +44,10 @@ router.get('/table-data/sort', async (req, res) => {
         errors.push('Wrong parameters');
         res.send(getResponse(errors, null));
     } else {
-        const data = await getSortData(req.query.sortBy, req.query.sortMethod).catch((e) => errors.push(e.message));
+        let data = await getSortData(req.query.sortBy, req.query.sortMethod).catch((e) => errors.push(e.message));
+        if (!data) {
+            data = [];
+        }
         res.send(getResponse(errors, data));
     }
 });
@@ -47,9 +58,10 @@ router.get('/table-data/filter', async (req, res) => {
         errors.push('Wrong parameters');
         res.send(getResponse(errors, null));
     } else {
-        const data = await getFilterData(req.query.filterBy, req.query.condition, req.query.value).catch((e) =>
-            errors.push(e.message)
-        );
+        let data = await getFilterData(req.query.filterBy, req.query.condition, req.query.value).catch((e) => errors.push(e.message));
+        if (!data) {
+            data = [];
+        }
         res.send(getResponse(errors, data));
     }
 });
@@ -63,6 +75,11 @@ router.get('/headers', async (req, res) => {
 router.get('/conditions', async (req, res) => {
     const errors: Array<string> = [];
     res.send(getResponse(errors, conditions));
+});
+
+router.get('/sortMethods', async (req, res) => {
+    const errors: Array<string> = [];
+    res.send(getResponse(errors, sortMethods));
 });
 
 app.use('/api', router);

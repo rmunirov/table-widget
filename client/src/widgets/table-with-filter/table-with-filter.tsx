@@ -1,14 +1,81 @@
-import React, { useState } from 'react';
-import { TableDataType, TableHeaderType } from '../../../typings/types';
+import React, { useEffect, useState } from 'react';
 import { SelectComponent, InputComponent, TableComponent } from '../../components';
-import { useGetTableDataQuery } from '../../__data__/services/api';
+import {
+    useGetConditionsQuery,
+    useGetHeadersQuery,
+    useGetSortMethodsQuery,
+    useGetTableDataFilterMutation,
+    useGetTableDataQuery,
+    useGetTableDataSortMutation,
+} from '../../__data__/services/api';
 import { Wrapper, Filter, Content } from './table-with-filter.styles';
 
 const TableWithFilter = () => {
     const [column, setColumn] = useState('');
     const [condition, setCondition] = useState('');
     const [value, setValue] = useState('');
-    const { data, isLoading } = useGetTableDataQuery(undefined);
+    const [data, setData] = useState([]);
+    const [activeSortColumn, setActiveSortColumn] = useState(null);
+    const [sortTable, resultSort] = useGetTableDataSortMutation({
+        selectFromResult: (result) => ({
+            ...result,
+        }),
+    });
+    const [filterTable, resultFilter] = useGetTableDataFilterMutation({
+        selectFromResult: (result) => ({
+            ...result,
+        }),
+    });
+
+    const { tableData, isLoadingTableData } = useGetTableDataQuery(undefined, {
+        selectFromResult: (result) => ({
+            isLoadingTableData: result.isLoading,
+            tableData: result.data,
+            ...result,
+        }),
+    });
+    const { headersData, isLoadingHeaders } = useGetHeadersQuery(undefined, {
+        selectFromResult: (result) => ({
+            isLoadingHeaders: result.isLoading,
+            headersData: result.data,
+            ...result,
+        }),
+    });
+    const { conditionsData, isLoadingConditions } = useGetConditionsQuery(undefined, {
+        selectFromResult: (result) => ({
+            isLoadingConditions: result.isLoading,
+            conditionsData: result.data,
+            ...result,
+        }),
+    });
+
+    const { sortMethodsData, isLoadingSortMethods } = useGetSortMethodsQuery(undefined, {
+        selectFromResult: (result) => ({
+            isLoadingSortMethods: result.isLoading,
+            sortMethodsData: result.data,
+            ...result,
+        }),
+    });
+
+    useEffect(() => {
+        if (value && column && value) {
+            filterTable({ filterBy: column, condition: condition, value: value });
+        }
+    }, [column, condition, value]);
+
+    useEffect(() => {
+        if (tableData && resultSort.isUninitialized) {
+            setData(tableData?.body);
+        }
+
+        if (resultSort.isSuccess && resultSort?.data?.success) {
+            setData(resultSort?.data?.body);
+        }
+
+        if (resultFilter.isSuccess && resultFilter?.data?.success) {
+            setData(resultFilter?.data?.body);
+        }
+    }, [tableData, resultSort, resultFilter]);
 
     const handleColumnChange = (value: string) => {
         setColumn(value);
@@ -22,61 +89,39 @@ const TableWithFilter = () => {
         setValue(value);
     };
 
-    const items = [
-        { value: 'data', label: 'Дата' },
-        { value: 'name', label: 'Название' },
-        { value: 'count', label: 'Количество' },
-        { value: 'distance', label: 'Расстояние' },
-    ];
+    const onSort = (value: string, method: string) => {
+        sortTable({ sortBy: value, sortMethod: method });
+        setActiveSortColumn(headersData?.body.find((item) => item.value === value));
+    };
 
-    const conditions = [
-        { value: 'equal', label: 'равно' },
-        { value: 'contain', label: 'содержит' },
-        { value: 'greater', label: 'больше' },
-        { value: 'less', label: 'меньше' },
-    ];
-
-    const headers: Array<TableHeaderType> = [
-        { title: 'Дата', withSort: false, onSort: () => {} },
-        { title: 'Название', withSort: true, onSort: () => {} },
-        { title: 'Количество', withSort: true, onSort: () => {} },
-        { title: 'Расстояние', withSort: true, onSort: () => {} },
-    ];
-
-    // const tableData: Array<TableDataType> = [
-    //     { date: new Date(), name: 'React#1', count: 1, distance: 11 },
-    //     { date: new Date(), name: 'React#2', count: 2, distance: 12 },
-    //     { date: new Date(), name: 'React#3', count: 3, distance: 13 },
-    //     { date: new Date(), name: 'React#4', count: 4, distance: 14 },
-    //     { date: new Date(), name: 'React#5', count: 5, distance: 15 },
-    //     { date: new Date(), name: 'React#6', count: 6, distance: 16 },
-    //     { date: new Date(), name: 'React#7', count: 7, distance: 17 },
-    //     { date: new Date(), name: 'React#8', count: 8, distance: 18 },
-    //     { date: new Date(), name: 'React#9', count: 9, distance: 19 },
-    // ];
-
-    if (isLoading) {
+    if (isLoadingTableData || isLoadingHeaders || isLoadingConditions || isLoadingSortMethods) {
         return <div>is loading...</div>;
     }
 
-    if (!data?.success) {
+    if (!tableData?.success || !headersData?.success || !conditionsData?.success || !sortMethodsData?.success) {
         return <div>Something is wrong, please update the page</div>;
     }
+
+    if (!data) {
+        return <div>Data is not received</div>;
+    }
+
+    const headersWithSort = headersData?.body.map((item) => {
+        return {
+            ...item,
+            onSort: onSort,
+        };
+    });
 
     return (
         <Wrapper>
             <Filter>
-                <SelectComponent items={items} labelText="Столбец" value={column} onChange={handleColumnChange} />
-                <SelectComponent
-                    items={conditions}
-                    labelText="Условие"
-                    value={condition}
-                    onChange={handleConditionChange}
-                />
+                <SelectComponent items={headersData?.body} labelText="Столбец" value={column} onChange={handleColumnChange} />
+                <SelectComponent items={conditionsData?.body} labelText="Условие" value={condition} onChange={handleConditionChange} />
                 <InputComponent labelText="Значение" value={value} onChange={handleValueChange} />
             </Filter>
             <Content>
-                <TableComponent headers={headers} data={data?.body} />
+                <TableComponent headers={headersWithSort} data={data} methods={sortMethodsData?.body} activeSortColumn={activeSortColumn} />
             </Content>
         </Wrapper>
     );

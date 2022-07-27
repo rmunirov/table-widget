@@ -1,7 +1,8 @@
 export type TableHeaderType = {
-    title: string;
+    value: string;
+    label: string;
     withSort: boolean;
-    onSort: () => void;
+    onSort: (value: string, method: string) => void;
 };
 
 export type TableDataType = {
