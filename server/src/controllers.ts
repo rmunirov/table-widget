@@ -43,66 +43,59 @@ const handleQuery = async (queryText: string) => {
 };
 
 /** Get table data */
-export const getTableData = async () => {
+export const getAllData = async () => {
     const text = 'SELECT * FROM test_data';
     return await handleQuery(text);
 };
 
 /** Get table column names */
 export const getTableColumnNames = async () => {
-    // const text = "SELECT column_name as header FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'test_data'";
-    // const names = await handleQuery(text);
-    // // delete 'id' column
-    // names.splice(0, 1);
-
-    // const findLabel = (header: string) => {
-    //     return headers.find((item) => item.value === header)?.label;
-    // };
-
-    // return names.map((item: { header: string }) => {
-    //     return { value: item.header, label: findLabel(item.header) };
-    // });
     return headers;
 };
 
-/** Sort table data by name */
-export const getSortData = async (column: any, method: any) => {
-    if (!headers.find((item) => item.value === column)) {
+/** Get data with sort and filter */
+export const getQueryData = async (sortBy: string, sortMethod: string, filterBy: string, filterCond: string, filterVal: string) => {
+    if (!headers.find((item) => item.value === sortBy)) {
         throw new Error('column is not defined');
     }
 
-    if (!sortMethods.includes(method)) {
+    if (!sortMethods.includes(sortMethod)) {
         throw new Error('sort method is not defined');
     }
 
-    const text = 'SELECT * FROM test_data ORDER BY' + ' ' + column + ' ' + method;
-    return await handleQuery(text);
-};
-
-/** Filter table data by passed parameters */
-export const getFilterData = async (column: any, condition: any, value: any) => {
-    const cond = conditions.find((item) => item.value === condition);
-    if (!cond) {
+    const condition = conditions.find((item) => item.value === filterCond);
+    if (!condition && filterVal) {
         throw new Error('condition is not defined');
     }
 
-    if (!headers.find((item) => item.value === column)) {
+    if (!headers.find((item) => item.value === filterBy) && filterVal) {
         throw new Error('column is not defined');
     }
 
-    let valueCopy = value;
-    let columnCopy = column;
-
-    if (condition === ConditionNames.CONTAIN) {
-        valueCopy = "'%" + value + "%'";
-        columnCopy = column + '::text';
+    if (!filterVal) {
+        const text = 'SELECT * FROM test_data ORDER BY' + ' ' + sortBy + ' ' + sortMethod;
+        return await handleQuery(text);
     }
 
-    if (column === 'date' || column === 'name') {
-        columnCopy = column + '::text';
-        valueCopy = "'" + value + "'";
+    let valueCopy = "'" + filterVal + "'";
+    let filterByCopy = filterBy + '::text';
+
+    if (filterCond === ConditionNames.CONTAIN) {
+        valueCopy = "'%" + filterVal + "%'";
     }
 
-    const text = 'SELECT * FROM test_data WHERE' + ' ' + columnCopy + ' ' + cond.symbol + ' ' + valueCopy;
+    const text =
+        'SELECT * FROM test_data WHERE' +
+        ' ' +
+        filterByCopy +
+        ' ' +
+        condition.symbol +
+        ' ' +
+        valueCopy +
+        'ORDER BY' +
+        ' ' +
+        sortBy +
+        ' ' +
+        sortMethod;
     return await handleQuery(text);
 };

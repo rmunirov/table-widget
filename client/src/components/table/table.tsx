@@ -30,7 +30,7 @@ const TableComponent: FC<PropsType> = ({ headers, data, methods, activeSortColum
                     </Row>
                 </THead>
                 <TBody>
-                    {data.map((item) => {
+                    {data?.map((item) => {
                         return <TableDataRow key={item.name} {...item} />;
                     })}
                 </TBody>

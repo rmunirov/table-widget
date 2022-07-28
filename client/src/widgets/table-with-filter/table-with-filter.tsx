@@ -1,39 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { SelectComponent, InputComponent, TableComponent } from '../../components';
-import {
-    useGetConditionsQuery,
-    useGetHeadersQuery,
-    useGetSortMethodsQuery,
-    useGetTableDataFilterMutation,
-    useGetTableDataQuery,
-    useGetTableDataSortMutation,
-} from '../../__data__/services/api';
+import { useGetConditionsQuery, useGetHeadersQuery, useGetSortMethodsQuery, useGetTableDataMutation } from '../../__data__/services/api';
 import { Wrapper, Filter, Content } from './table-with-filter.styles';
 
 const TableWithFilter = () => {
-    const [column, setColumn] = useState('');
-    const [condition, setCondition] = useState('');
-    const [value, setValue] = useState('');
-    const [data, setData] = useState([]);
+    const [filterBy, setFilterBy] = useState('');
+    const [filterCond, setFilterCond] = useState('');
+    const [FilterVal, setFilterVal] = useState('');
+    const [sortBy, setSortBy] = useState('');
+    const [sortMethod, setSortMethod] = useState('');
     const [activeSortColumn, setActiveSortColumn] = useState(null);
-    const [sortTable, resultSort] = useGetTableDataSortMutation({
-        selectFromResult: (result) => ({
-            ...result,
-        }),
-    });
-    const [filterTable, resultFilter] = useGetTableDataFilterMutation({
-        selectFromResult: (result) => ({
-            ...result,
-        }),
-    });
 
-    const { tableData, isLoadingTableData } = useGetTableDataQuery(undefined, {
-        selectFromResult: (result) => ({
-            isLoadingTableData: result.isLoading,
-            tableData: result.data,
-            ...result,
-        }),
-    });
+    const [getData, result] = useGetTableDataMutation();
+
     const { headersData, isLoadingHeaders } = useGetHeadersQuery(undefined, {
         selectFromResult: (result) => ({
             isLoadingHeaders: result.isLoading,
@@ -58,52 +37,39 @@ const TableWithFilter = () => {
     });
 
     useEffect(() => {
-        if (value && column && value) {
-            filterTable({ filterBy: column, condition: condition, value: value });
+        if (sortBy && sortMethod) {
+            getData({ sortBy: sortBy, sortMethod: sortMethod, filterBy: filterBy, condition: filterCond, value: FilterVal });
         }
-    }, [column, condition, value]);
+    }, [filterBy, filterCond, FilterVal, sortBy, sortMethod]);
 
     useEffect(() => {
-        if (tableData && resultSort.isUninitialized) {
-            setData(tableData?.body);
-        }
-
-        if (resultSort.isSuccess && resultSort?.data?.success) {
-            setData(resultSort?.data?.body);
-        }
-
-        if (resultFilter.isSuccess && resultFilter?.data?.success) {
-            setData(resultFilter?.data?.body);
-        }
-    }, [tableData, resultSort, resultFilter]);
+        getData({ sortBy: sortBy, sortMethod: sortMethod, filterBy: filterBy, condition: filterCond, value: FilterVal });
+    }, []);
 
     const handleColumnChange = (value: string) => {
-        setColumn(value);
+        setFilterBy(value);
     };
 
     const handleConditionChange = (value: string) => {
-        setCondition(value);
+        setFilterCond(value);
     };
 
     const handleValueChange = (value: string) => {
-        setValue(value);
+        setFilterVal(value);
     };
 
     const onSort = (value: string, method: string) => {
-        sortTable({ sortBy: value, sortMethod: method });
+        setSortBy(value);
+        setSortMethod(method);
         setActiveSortColumn(headersData?.body.find((item) => item.value === value));
     };
 
-    if (isLoadingTableData || isLoadingHeaders || isLoadingConditions || isLoadingSortMethods) {
+    if (isLoadingHeaders || isLoadingConditions || isLoadingSortMethods || result.isLoading) {
         return <div>is loading...</div>;
     }
 
-    if (!tableData?.success || !headersData?.success || !conditionsData?.success || !sortMethodsData?.success) {
-        return <div>Something is wrong, please update the page</div>;
-    }
-
-    if (!data) {
-        return <div>Data is not received</div>;
+    if (!headersData?.success || !conditionsData?.success || !sortMethodsData?.success || !result.isSuccess || !result.data.success) {
+        return <div>Something went wrong, please update the page</div>;
     }
 
     const headersWithSort = headersData?.body.map((item) => {
@@ -116,12 +82,17 @@ const TableWithFilter = () => {
     return (
         <Wrapper>
             <Filter>
-                <SelectComponent items={headersData?.body} labelText="Столбец" value={column} onChange={handleColumnChange} />
-                <SelectComponent items={conditionsData?.body} labelText="Условие" value={condition} onChange={handleConditionChange} />
-                <InputComponent labelText="Значение" value={value} onChange={handleValueChange} />
+                <SelectComponent items={headersData?.body} labelText="Столбец" value={filterBy} onChange={handleColumnChange} />
+                <SelectComponent items={conditionsData?.body} labelText="Условие" value={filterCond} onChange={handleConditionChange} />
+                <InputComponent labelText="Значение" value={FilterVal} onChange={handleValueChange} />
             </Filter>
             <Content>
-                <TableComponent headers={headersWithSort} data={data} methods={sortMethodsData?.body} activeSortColumn={activeSortColumn} />
+                <TableComponent
+                    headers={headersWithSort}
+                    data={result?.data?.body}
+                    methods={sortMethodsData?.body}
+                    activeSortColumn={activeSortColumn}
+                />
             </Content>
         </Wrapper>
     );

@@ -1,6 +1,6 @@
 import express from 'express';
 import { config } from 'dotenv';
-import { conditions, connect, getFilterData, getSortData, getTableColumnNames, getTableData, sortMethods } from './controllers';
+import { conditions, connect, getAllData, getQueryData, getTableColumnNames, sortMethods } from './controllers';
 import { getResponse } from './utils/common';
 
 // .env
@@ -34,34 +34,17 @@ router.use(cors);
 
 router.get('/table-data', async (req, res) => {
     const errors: Array<string> = [];
-    const data = await getTableData().catch((e) => errors.push(e.message));
-    res.send(getResponse(errors, data));
-});
+    const sortBy = req.query.sortBy as string;
+    const sortMethod = req.query.sortMethod as string;
+    const filterBy = req.query.filterBy as string;
+    const filterCond = req.query.condition as string;
+    const filterVal = req.query.value as string;
 
-router.get('/table-data/sort', async (req, res) => {
-    const errors: Array<string> = [];
-    if (!req.query.sortBy || !req.query.sortMethod) {
-        errors.push('Wrong parameters');
-        res.send(getResponse(errors, null));
-    } else {
-        let data = await getSortData(req.query.sortBy, req.query.sortMethod).catch((e) => errors.push(e.message));
-        if (!data) {
-            data = [];
-        }
+    if (!sortBy || !sortMethod) {
+        const data = await getAllData().catch((e) => errors.push(e.message));
         res.send(getResponse(errors, data));
-    }
-});
-
-router.get('/table-data/filter', async (req, res) => {
-    const errors: Array<string> = [];
-    if (!req.query.filterBy || !req.query.condition || !req.query.value) {
-        errors.push('Wrong parameters');
-        res.send(getResponse(errors, null));
     } else {
-        let data = await getFilterData(req.query.filterBy, req.query.condition, req.query.value).catch((e) => errors.push(e.message));
-        if (!data) {
-            data = [];
-        }
+        const data = await getQueryData(sortBy, sortMethod, filterBy, filterCond, filterVal).catch((e) => errors.push(e.message));
         res.send(getResponse(errors, data));
     }
 });
