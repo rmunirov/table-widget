@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { SelectComponent, InputComponent, TableComponent } from '../../components';
-import { useGetConditionsQuery, useGetHeadersQuery, useGetSortMethodsQuery, useGetTableDataMutation } from '../../__data__/services/api';
+import { useGetParamsQuery, useGetTableDataMutation } from '../../__data__/services/api';
 import { Wrapper, Filter, Content } from './table-with-filter.styles';
 
+// TODO надо разделить заголовок таблицы и данные на 2 виджета, чтобы обрабатывали свои запросы отдельно
 const TableWithFilter = () => {
     const [filterBy, setFilterBy] = useState('');
     const [filterCond, setFilterCond] = useState('');
@@ -13,30 +14,14 @@ const TableWithFilter = () => {
 
     const [getData, result] = useGetTableDataMutation();
 
-    const { headersData, isLoadingHeaders } = useGetHeadersQuery(undefined, {
-        selectFromResult: (result) => ({
-            isLoadingHeaders: result.isLoading,
-            headersData: result.data,
-            ...result,
-        }),
-    });
-    const { conditionsData, isLoadingConditions } = useGetConditionsQuery(undefined, {
-        selectFromResult: (result) => ({
-            isLoadingConditions: result.isLoading,
-            conditionsData: result.data,
-            ...result,
-        }),
-    });
-
-    const { sortMethodsData, isLoadingSortMethods } = useGetSortMethodsQuery(undefined, {
-        selectFromResult: (result) => ({
-            isLoadingSortMethods: result.isLoading,
-            sortMethodsData: result.data,
-            ...result,
-        }),
-    });
+    const { data, isLoading } = useGetParamsQuery(undefined);
 
     useEffect(() => {
+        console.log(filterBy);
+        console.log(filterCond);
+        console.log(FilterVal);
+        console.log(sortBy);
+        console.log(sortMethod);
         if (sortBy && sortMethod) {
             getData({ sortBy: sortBy, sortMethod: sortMethod, filterBy: filterBy, condition: filterCond, value: FilterVal });
         }
@@ -61,18 +46,18 @@ const TableWithFilter = () => {
     const onSort = (value: string, method: string) => {
         setSortBy(value);
         setSortMethod(method);
-        setActiveSortColumn(headersData?.body.find((item) => item.value === value));
+        setActiveSortColumn(data?.body?.headers.find((item) => item.value === value));
     };
 
-    if (isLoadingHeaders || isLoadingConditions || isLoadingSortMethods || result.isLoading) {
+    if (result.isLoading || isLoading) {
         return <div>is loading...</div>;
     }
 
-    if (!headersData?.success || !conditionsData?.success || !sortMethodsData?.success || !result.isSuccess || !result.data.success) {
+    if (!result?.data?.success || !data?.success) {
         return <div>Something went wrong, please update the page</div>;
     }
 
-    const headersWithSort = headersData?.body.map((item) => {
+    const headersWithSort = data?.body?.headers.map((item) => {
         return {
             ...item,
             onSort: onSort,
@@ -82,15 +67,15 @@ const TableWithFilter = () => {
     return (
         <Wrapper>
             <Filter>
-                <SelectComponent items={headersData?.body} labelText="Столбец" value={filterBy} onChange={handleColumnChange} />
-                <SelectComponent items={conditionsData?.body} labelText="Условие" value={filterCond} onChange={handleConditionChange} />
+                <SelectComponent items={data?.body?.headers} labelText="Столбец" value={filterBy} onChange={handleColumnChange} />
+                <SelectComponent items={data?.body?.conditions} labelText="Условие" value={filterCond} onChange={handleConditionChange} />
                 <InputComponent labelText="Значение" value={FilterVal} onChange={handleValueChange} />
             </Filter>
             <Content>
                 <TableComponent
                     headers={headersWithSort}
                     data={result?.data?.body}
-                    methods={sortMethodsData?.body}
+                    methods={data?.body?.sortMethods}
                     activeSortColumn={activeSortColumn}
                 />
             </Content>

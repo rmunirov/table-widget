@@ -29,6 +29,12 @@ export const headers = [
 
 export const sortMethods = ['ASC', 'DESC'];
 
+const params = {
+    conditions,
+    headers,
+    sortMethods,
+};
+
 /** Query handler */
 const handleQuery = async (queryText: string) => {
     if (db === null) {
@@ -48,9 +54,9 @@ export const getAllData = async () => {
     return await handleQuery(text);
 };
 
-/** Get table column names */
-export const getTableColumnNames = async () => {
-    return headers;
+/** Get params */
+export const getParams = async () => {
+    return params;
 };
 
 /** Get data with sort and filter */

@@ -5,15 +5,8 @@ export const api = createApi({
     reducerPath: 'table-widget',
     baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:4343/api', mode: 'cors' }),
     endpoints: (builder) => ({
-        getHeaders: builder.query({
-            query: () => ENDPOINTS.GET_HEADERS,
-        }),
-
-        getConditions: builder.query({
-            query: () => ENDPOINTS.GET_CONDITIONS,
-        }),
-        getSortMethods: builder.query({
-            query: () => ENDPOINTS.GET_SORT_METHODS,
+        getParams: builder.query({
+            query: () => ENDPOINTS.GET_PARAMS,
         }),
 
         getTableData: builder.mutation({
@@ -27,4 +20,4 @@ export const api = createApi({
     }),
 });
 
-export const { useGetConditionsQuery, useGetHeadersQuery, useGetSortMethodsQuery, useGetTableDataMutation } = api;
+export const { useGetTableDataMutation, useGetParamsQuery } = api;

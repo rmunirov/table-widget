@@ -1,6 +1,6 @@
 import express from 'express';
 import { config } from 'dotenv';
-import { conditions, connect, getAllData, getQueryData, getTableColumnNames, sortMethods } from './controllers';
+import { connect, getAllData, getParams, getQueryData } from './controllers';
 import { getResponse } from './utils/common';
 
 // .env
@@ -30,7 +30,7 @@ const cors = (req: any, res: any, next: () => void) => {
     next();
 };
 
-router.use(cors);
+router.use(cors, wait);
 
 router.get('/table-data', async (req, res) => {
     const errors: Array<string> = [];
@@ -49,20 +49,10 @@ router.get('/table-data', async (req, res) => {
     }
 });
 
-router.get('/headers', async (req, res) => {
+router.get('/params', async (req, res) => {
     const errors: Array<string> = [];
-    const data = await getTableColumnNames().catch((e) => errors.push(e.message));
+    const data = await getParams().catch((e) => errors.push(e.message));
     res.send(getResponse(errors, data));
-});
-
-router.get('/conditions', async (req, res) => {
-    const errors: Array<string> = [];
-    res.send(getResponse(errors, conditions));
-});
-
-router.get('/sortMethods', async (req, res) => {
-    const errors: Array<string> = [];
-    res.send(getResponse(errors, sortMethods));
 });
 
 app.use('/api', router);

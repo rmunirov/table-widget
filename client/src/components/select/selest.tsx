@@ -18,11 +18,11 @@ type PropsType = {
 };
 
 const SelectComponent: FC<PropsType> = ({ items, labelText, value, onChange }) => {
-    useEffect(() => {
-        if (items.length > 0) {
-            onChange(items[0].value);
-        }
-    }, []);
+    // useEffect(() => {
+    //     if (items.length > 0) {
+    //         onChange(items[0].value);
+    //     }
+    // }, []);
 
     const handleChange = (event) => {
         onChange(event.target.value);
