@@ -10,10 +10,10 @@ export const api = createApi({
         }),
 
         getTableData: builder.mutation({
-            query: ({ sortBy, sortMethod, filterBy, condition, value }) => ({
+            query: ({ sortBy, sortMethod, filterBy, condition, value, page }) => ({
                 url:
                     `${ENDPOINTS.GET_TABLE_DATA}?sortBy=${sortBy}` +
-                    `&sortMethod=${sortMethod}&filterBy=${filterBy}&condition=${condition}&value=${value}`,
+                    `&sortMethod=${sortMethod}&filterBy=${filterBy}&condition=${condition}&value=${value}&page=${page}`,
                 method: 'GET',
             }),
         }),

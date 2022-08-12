@@ -9,7 +9,7 @@ const App = () => {
     return (
         <ApiProvider api={api}>
             <Layout>
-                <h1>Table widget</h1>
+                <h1 style={{ margin: '0 auto' }}>Table widget</h1>
                 <MainPage />
             </Layout>
         </ApiProvider>

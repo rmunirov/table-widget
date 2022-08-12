@@ -6,7 +6,9 @@ export const connect = async () => {
     db = await getDB();
 };
 
-enum ConditionNames {
+const PAGE_SIZE = 2;
+
+export enum ConditionNames {
     EQUAL = 'EQUAL',
     CONTAIN = 'CONTAIN',
     GREATER = 'GREATER',
@@ -60,7 +62,14 @@ export const getParams = async () => {
 };
 
 /** Get data with sort and filter */
-export const getQueryData = async (sortBy: string, sortMethod: string, filterBy: string, filterCond: string, filterVal: string) => {
+export const getQueryData = async (
+    sortBy: string,
+    sortMethod: string,
+    filterBy: string,
+    filterCond: string,
+    filterVal: string,
+    page: number,
+) => {
     if (!headers.find((item) => item.value === sortBy)) {
         throw new Error('column is not defined');
     }
@@ -78,30 +87,64 @@ export const getQueryData = async (sortBy: string, sortMethod: string, filterBy:
         throw new Error('column is not defined');
     }
 
+    if (!page) {
+        page = 1;
+    }
+
+    let text = '';
+    let countText = '';
+
     if (!filterVal) {
-        const text = 'SELECT * FROM test_data ORDER BY' + ' ' + sortBy + ' ' + sortMethod;
-        return await handleQuery(text);
+        text =
+            'SELECT * FROM test_data ORDER BY' +
+            ' ' +
+            sortBy +
+            ' ' +
+            sortMethod +
+            ' ' +
+            `OFFSET ${PAGE_SIZE * page - PAGE_SIZE}` +
+            ' ' +
+            `LIMIT ${PAGE_SIZE}`;
+
+        countText = 'SELECT COUNT(id) FROM test_data';
+    } else {
+        let valueCopy = "'" + filterVal + "'";
+        let filterByCopy = filterBy + '::text';
+
+        if (filterCond === ConditionNames.CONTAIN) {
+            valueCopy = "'%" + filterVal + "%'";
+        }
+
+        text =
+            'SELECT * FROM test_data WHERE' +
+            ' ' +
+            filterByCopy +
+            ' ' +
+            condition.symbol +
+            ' ' +
+            valueCopy +
+            'ORDER BY' +
+            ' ' +
+            sortBy +
+            ' ' +
+            sortMethod +
+            ' ' +
+            `OFFSET ${PAGE_SIZE * page - PAGE_SIZE}` +
+            ' ' +
+            `LIMIT ${PAGE_SIZE}`;
+
+        countText = 'SELECT COUNT(id) FROM test_data WHERE' + ' ' + filterByCopy + ' ' + condition.symbol + ' ' + valueCopy;
     }
 
-    let valueCopy = "'" + filterVal + "'";
-    let filterByCopy = filterBy + '::text';
+    const [count] = await handleQuery(countText);
 
-    if (filterCond === ConditionNames.CONTAIN) {
-        valueCopy = "'%" + filterVal + "%'";
-    }
+    const result = await handleQuery(text);
 
-    const text =
-        'SELECT * FROM test_data WHERE' +
-        ' ' +
-        filterByCopy +
-        ' ' +
-        condition.symbol +
-        ' ' +
-        valueCopy +
-        'ORDER BY' +
-        ' ' +
-        sortBy +
-        ' ' +
-        sortMethod;
-    return await handleQuery(text);
+    return {
+        page: page,
+        pageSize: PAGE_SIZE,
+        total: Number(count.count),
+        totalPages: Math.ceil(Number(count.count) / PAGE_SIZE),
+        data: result,
+    };
 };

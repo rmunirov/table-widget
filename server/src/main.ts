@@ -1,6 +1,6 @@
 import express from 'express';
 import { config } from 'dotenv';
-import { connect, getAllData, getParams, getQueryData } from './controllers';
+import { connect, getAllData, getParams, getQueryData, headers } from './controllers';
 import { getResponse } from './utils/common';
 
 // .env
@@ -30,23 +30,23 @@ const cors = (req: any, res: any, next: () => void) => {
     next();
 };
 
-router.use(cors, wait);
+router.use(cors);
 
 router.get('/table-data', async (req, res) => {
     const errors: Array<string> = [];
-    const sortBy = req.query.sortBy as string;
-    const sortMethod = req.query.sortMethod as string;
+    let sortBy = req.query.sortBy as string;
+    let sortMethod = req.query.sortMethod as string;
     const filterBy = req.query.filterBy as string;
     const filterCond = req.query.condition as string;
     const filterVal = req.query.value as string;
+    const page = Number(req.query.page as string);
 
     if (!sortBy || !sortMethod) {
-        const data = await getAllData().catch((e) => errors.push(e.message));
-        res.send(getResponse(errors, data));
-    } else {
-        const data = await getQueryData(sortBy, sortMethod, filterBy, filterCond, filterVal).catch((e) => errors.push(e.message));
-        res.send(getResponse(errors, data));
+        sortBy = 'name';
+        sortMethod = 'ASC';
     }
+    const data = await getQueryData(sortBy, sortMethod, filterBy, filterCond, filterVal, page).catch((e) => errors.push(e.message));
+    res.send(getResponse(errors, data));
 });
 
 router.get('/params', async (req, res) => {

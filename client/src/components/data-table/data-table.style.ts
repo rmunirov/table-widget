@@ -11,8 +11,4 @@ export const Table = styled('table')`
     border-collapse: collapse;
 `;
 
-export const Row = styled('tr')``;
-
-export const THead = styled('thead')``;
-
-export const TBody = styled('tbody')``;
+export const Content = styled('tbody')``;

@@ -18,7 +18,13 @@ module.exports = {
         'max-len': ['error', { code: 140 }],
         'object-curly-spacing': ['error', 'always'],
         'operator-linebreak': 'off',
-        'indent': ['error', 4],
+        'indent': [
+            'error',
+            4,
+            {
+                SwitchCase: 1,
+            },
+        ],
     },
     settings: {
         react: {

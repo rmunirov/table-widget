@@ -1,25 +1,26 @@
 import React, { FC, useState } from 'react';
-import { Button, Head, Title, Wrapper, Image } from './table-head.styles';
-import { SortOffIcon, SortOnIcon } from './../../../../remote-assets';
-import { TableHeaderType } from '../../../../typings/types';
+import { SortOffIcon, SortOnIcon } from '../../../../../remote-assets';
+import { TableHeaderType } from '../../../../../typings/types';
+import { Button, Header, Title, Wrapper, Image } from './data-table-header-item.styles';
 
 type PropsType = {
     header: TableHeaderType;
     methods: Array<string>;
     isActive: boolean;
+    onSort: (value: string, method: string) => void;
 };
 
-const TableHead: FC<PropsType> = ({ header, methods, isActive }) => {
+const TableHeaderItem: FC<PropsType> = ({ header, methods, isActive, onSort }) => {
     const [ASC, DESC] = methods;
     const [method, setMethod] = useState(ASC);
 
     const handleClick = () => {
-        header.onSort(header.value, method);
         setMethod(method === ASC ? DESC : ASC);
+        onSort(header.value, method);
     };
 
     return (
-        <Head>
+        <Header>
             <Wrapper>
                 <Title>{header.label}</Title>
                 {header.withSort && (
@@ -28,8 +29,8 @@ const TableHead: FC<PropsType> = ({ header, methods, isActive }) => {
                     </Button>
                 )}
             </Wrapper>
-        </Head>
+        </Header>
     );
 };
 
-export default TableHead;
+export default TableHeaderItem;

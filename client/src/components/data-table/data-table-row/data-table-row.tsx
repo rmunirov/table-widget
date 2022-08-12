@@ -1,8 +1,8 @@
 import React, { FC } from 'react';
-import { Data, Row } from './table-data.styles';
-import { TableDataType } from './../../../../typings/types';
+import { Data, Row } from './data-table-data.styles';
+import { TableDataType } from '../../../../typings/types';
 
-const TableDataRow: FC<TableDataType> = ({ date, name, count, distance }) => {
+const DataTableRow: FC<TableDataType> = ({ date, name, count, distance }) => {
     return (
         <Row>
             <Data>{date.toLocaleString()}</Data>
@@ -13,4 +13,4 @@ const TableDataRow: FC<TableDataType> = ({ date, name, count, distance }) => {
     );
 };
 
-export default TableDataRow;
+export default DataTableRow;
